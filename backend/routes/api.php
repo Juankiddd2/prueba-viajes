@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
+
+// Rutas para ciudades y consultas
+Route::get('/ciudades', [\App\Http\Controllers\CiudadController::class, 'index']);
+Route::post('/consulta', [\App\Http\Controllers\ConsultaController::class, 'store']);
