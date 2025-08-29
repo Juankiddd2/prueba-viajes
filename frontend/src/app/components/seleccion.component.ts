@@ -15,6 +15,7 @@ import { RouterModule } from '@angular/router';
 export class SeleccionComponent {
   ciudades: any[] = [];
   ciudadId: number | '' = '';
+  rawPresupuesto: string = '';
   presupuesto: number | null = null;
   error: string = '';
 
@@ -26,7 +27,7 @@ export class SeleccionComponent {
   }
 
   continuar() {
-    if (!this.ciudadId || !this.presupuesto) {
+    if (!this.ciudadId || this.presupuesto === null) {
       this.error = 'Todos los campos son obligatorios';
       return;
     }
@@ -36,5 +37,18 @@ export class SeleccionComponent {
         presupuesto: this.presupuesto
       }
     });
+  }
+
+  
+  onPresupuestoChange(value: string) {
+    this.rawPresupuesto = value;
+    if (!value) {
+      this.presupuesto = null;
+      return;
+    }
+    // remove dots used as thousand separators, replace comma with dot for decimals
+    const normalized = value.replace(/\./g, '').replace(/,/g, '.');
+    const num = parseFloat(normalized);
+    this.presupuesto = isNaN(num) ? null : num;
   }
 }

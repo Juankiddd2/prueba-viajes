@@ -7,8 +7,8 @@
       <option value="" disabled selected>Selecciona una ciudad</option>
       <option *ngFor="let c of ciudades" [value]="c.id">{{ c.nombre }} ({{ c.pais }})</option>
     </select>
-    <label>Presupuesto en COP:</label>
-    <input type="number" [(ngModel)]="presupuesto" name="presupuesto" required min="1">
+  <label>Presupuesto en COP:</label>
+  <input type="text" [(ngModel)]="rawPresupuesto" (ngModelChange)="onPresupuestoChange($event)" name="presupuesto" required>
     <button type="submit">Consultar</button>
   </form>
 </div>
