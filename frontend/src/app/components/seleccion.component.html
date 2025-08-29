@@ -1,0 +1,14 @@
+<div class="seleccion-container">
+  <h2>Consulta tu viaje</h2>
+  <div *ngIf="error" class="error">{{ error }}</div>
+  <form (ngSubmit)="continuar()">
+    <label>Ciudad destino:</label>
+    <select [(ngModel)]="ciudadId" name="ciudadId" required>
+      <option value="" disabled selected>Selecciona una ciudad</option>
+      <option *ngFor="let c of ciudades" [value]="c.id">{{ c.nombre }} ({{ c.pais }})</option>
+    </select>
+    <label>Presupuesto en COP:</label>
+    <input type="number" [(ngModel)]="presupuesto" name="presupuesto" required min="1">
+    <button type="submit">Consultar</button>
+  </form>
+</div>

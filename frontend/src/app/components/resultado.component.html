@@ -1,0 +1,12 @@
+<div class="resultado-container">
+  <h2>Resultado de tu consulta</h2>
+  <div *ngIf="error" class="error">{{ error }}</div>
+  <div *ngIf="resultado">
+    <p><strong>Ciudad:</strong> {{ resultado.ciudad }} ({{ resultado.pais }})</p>
+    <p><strong>Clima actual:</strong> {{ resultado.clima }} °C</p>
+    <p><strong>Moneda local:</strong> {{ resultado.moneda }} ({{ resultado.simbolo }})</p>
+    <p><strong>Presupuesto convertido:</strong> {{ resultado.simbolo }} {{ resultado.presupuesto_convertido | number:'1.2-2' }}</p>
+    <p><strong>Tasa de cambio aplicada:</strong> {{ resultado.tasa_cambio }}</p>
+  </div>
+  <a routerLink="/">Volver</a>
+</div>
