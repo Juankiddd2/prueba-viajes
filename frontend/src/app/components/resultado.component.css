@@ -1,2 +1,11 @@
 
-@import './seleccion.component.css';
+
+.resultado-container{padding:12px 8px}
+.card-custom{padding:28px;border-radius:14px}
+
+.big{font-size:36px}
+.h2{font-size:34px}
+.h4{font-size:20px}
+.lead-plain{font-size:18px}
+.muted-small{font-size:15px}
+

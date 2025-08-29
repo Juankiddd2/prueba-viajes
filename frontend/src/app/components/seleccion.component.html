@@ -1,14 +1,37 @@
 <div class="seleccion-container">
   <h2>Consulta tu viaje</h2>
-  <div *ngIf="error" class="error">{{ error }}</div>
-  <form (ngSubmit)="continuar()">
-    <label>Ciudad destino:</label>
-    <select [(ngModel)]="ciudadId" name="ciudadId" required>
-      <option value="" disabled selected>Selecciona una ciudad</option>
-      <option *ngFor="let c of ciudades" [value]="c.id">{{ c.nombre }} ({{ c.pais }})</option>
-    </select>
-  <label>Presupuesto en COP:</label>
-  <input type="text" [(ngModel)]="rawPresupuesto" (ngModelChange)="onPresupuestoChange($event)" name="presupuesto" required>
-    <button type="submit">Consultar</button>
+  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+  <form (ngSubmit)="continuar()" class="row g-3" novalidate>
+      <div class="page-center">
+        <div class="panel-narrow">
+          <div class="hero-title">Consulta tu viaje</div>
+          <div class="hero-sub">Obtén el clima del día y cuánto sería tu presupuesto convertido a la moneda local.</div>
+
+          <div class="form-card">
+            <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+            <form (ngSubmit)="continuar()" novalidate>
+              <div class="form-row">
+                <div class="col-half">
+                  <label class="form-label-strong">Ciudad destino</label>
+                  <select class="form-select input-lg" [(ngModel)]="ciudadId" name="ciudadId" required>
+                    <option value="" disabled selected>Selecciona una ciudad</option>
+                    <option *ngFor="let c of ciudades" [value]="c.id">{{ c.nombre }} — {{ c.pais }}</option>
+                  </select>
+                </div>
+
+                <div class="col-half">
+                  <label class="form-label-strong">Presupuesto (COP)</label>
+                  <input class="form-control input-lg" type="text" placeholder="Ej: 500000 o 500.000" [(ngModel)]="rawPresupuesto" (ngModelChange)="onPresupuestoChange($event)" name="presupuesto" required>
+                  <div class="form-text">Vista previa: <span class="preview-amount" *ngIf="presupuesto !== null">{{ presupuesto | number:'1.0-0' }} COP</span><span *ngIf="presupuesto === null"> —</span></div>
+                </div>
+              </div>
+
+              <div class="cta-wrap">
+                <button class="btn btn-primary btn-lg btn-primary-custom" type="submit" [disabled]="!ciudadId || presupuesto === null">Consultar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
   </form>
 </div>

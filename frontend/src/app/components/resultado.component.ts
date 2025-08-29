@@ -14,15 +14,17 @@ import { RouterModule } from '@angular/router';
 export class ResultadoComponent {
   resultado: any = null;
   error: string = '';
+  loading: boolean = false;
 
   constructor(private route: ActivatedRoute, private api: ApiService) {
     this.route.queryParams.subscribe(params => {
       const ciudadId = params['ciudadId'];
       const presupuesto = params['presupuesto'];
       if (ciudadId && presupuesto) {
+        this.loading = true;
         this.api.postConsulta(ciudadId, presupuesto).subscribe({
-          next: (data: any) => this.resultado = data,
-          error: () => this.error = 'Error obteniendo resultado'
+          next: (data: any) => { this.resultado = data; this.loading = false },
+          error: (err: any) => { this.loading = false; this.error = err?.error?.error || 'Error obteniendo resultado' }
         });
       } else {
         this.error = 'Faltan datos para la consulta';
