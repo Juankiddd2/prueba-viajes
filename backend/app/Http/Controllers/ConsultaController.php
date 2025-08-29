@@ -43,58 +43,47 @@ class ConsultaController extends Controller
                 return response()->json(['error' => 'Respuesta de clima no contiene temperatura (main.temp)'], 502);
             }
 
-            // Obtener tasa de cambio (exchangerate.host)
-            $exchangeUrl = "https://api.exchangerate.host/convert?from=COP&to={$ciudad->codigo_moneda}";
-            $exchangeResponse = Http::get($exchangeUrl);
+           
+            $fastKey = env('FASTFOREX_API_KEY');
+            $tasa = null;
+            $tasa_source = null;
 
-            if (! $exchangeResponse->ok()) {
+            if (!empty($fastKey)) {
+                // usar fetch-multi para solicitar la moneda destino
+                $fastUrl = "https://api.fastforex.io/fetch-multi?from=COP&to={$ciudad->codigo_moneda}&api_key={$fastKey}";
+                $fastResp = Http::get($fastUrl);
+
+                if (! $fastResp->ok()) {
+                    return response()->json([
+                        'error' => 'Error obteniendo tasa desde FastForex',
+                        'status' => $fastResp->status(),
+                        'body' => $fastResp->body(),
+                        'tasa_origen' => 'none'
+                    ], 502);
+                }
+
+            
+                $rate = $fastResp->json("results.{$ciudad->codigo_moneda}");
+                if ($rate === null) {
+                
+                    $rate = $fastResp->json("result.{$ciudad->codigo_moneda}") ?? $fastResp->json('result') ?? null;
+                }
+
+                if ($rate !== null) {
+                    $tasa = $rate;
+                    $tasa_source = 'fastforex';
+                } else {
+                    return response()->json([
+                        'error' => 'FastForex respondió pero no contenía tasa para la moneda solicitada',
+                        'body' => $fastResp->body(),
+                        'tasa_origen' => 'none'
+                    ], 502);
+                }
+            } else {
                 return response()->json([
-                    'error' => 'Error obteniendo tasa de cambio',
-                    'status' => $exchangeResponse->status(),
-                    'body' => $exchangeResponse->body()
+                    'error' => 'No se encontró FASTFOREX_API_KEY en .env; añade FASTFOREX_API_KEY=tu_clave',
+                    'tasa_origen' => 'none'
                 ], 502);
-            }
-
-            $tasa = $exchangeResponse->json('info.rate');
-            // fallback: si no viene info.rate, intentar derivarla de result/query.amount
-            if ($tasa === null) {
-                $result = $exchangeResponse->json('result');
-                $amount = $exchangeResponse->json('query.amount') ?? 1;
-                if ($result !== null && $amount != 0) {
-                    $tasa = $result / $amount;
-                }
-            }
-
-            // Segundo fallback: usar endpoint /latest para obtener la tasa directamente
-            if ($tasa === null) {
-                $exchangeUrl2 = "https://api.exchangerate.host/latest?base=COP&symbols={$ciudad->codigo_moneda}";
-                $exchangeResponse2 = Http::get($exchangeUrl2);
-                if ($exchangeResponse2->ok()) {
-                    $tasa = $exchangeResponse2->json("rates.{$ciudad->codigo_moneda}");
-                }
-            }
-
-            // Último recurso: fallback local (tasas aproximadas) para desarrollo/demo o una falla de la api
-            $fromFallback = false;
-            if ($tasa === null) {
-                $fallbackRates = [
-                    'USD' => 0.00027, // 1 COP = 0.00027 USD (~1 USD = 3700 COP)
-                    'GBP' => 0.00022,
-                    'EUR' => 0.00025,
-                    'JPY' => 0.037,
-                    'MAD' => 0.0029,
-                ];
-
-                if (isset($fallbackRates[$ciudad->codigo_moneda])) {
-                    $tasa = $fallbackRates[$ciudad->codigo_moneda];
-                    $fromFallback = true;
-                   
-                    logger()->warning('Usando tasa de cambio fallback para ' . $ciudad->codigo_moneda);
-                }
-            }
-
-            if ($tasa === null) {
-                return response()->json(['error' => 'No se pudo obtener la tasa de cambio desde el proveedor'], 502);
             }
 
             $presupuesto_convertido = round($request->presupuesto_cop * $tasa, 2);
@@ -116,7 +105,7 @@ class ConsultaController extends Controller
                 'clima' => $clima,
                 'presupuesto_convertido' => $presupuesto_convertido,
                 'tasa_cambio' => $tasa,
-                'tasa_origen' => $fromFallback ? 'fallback' : 'api',
+                'tasa_origen' => $tasa_source ?? 'none',
             ]);
 
         } catch (\Exception $e) {
